@@ -396,6 +396,25 @@ textarea.inp{height:52px;padding:8px 10px;resize:none;line-height:1.5}
 .fin-btns .share{background:#0061ad;color:#fff}
 .fin-btns .share:hover{background:#00518f}
 </style>
+<style id="showme-css">
+#coach .showme{margin-right:8px}
+#demoCur{position:absolute;left:800px;top:450px;width:0;height:0;z-index:9999;pointer-events:none;opacity:0;
+  transition:left .9s cubic-bezier(.45,.05,.3,1),top .9s cubic-bezier(.45,.05,.3,1),opacity .25s}
+#demoCur.on{opacity:1}
+#demoCur svg{position:absolute;left:-4px;top:-3px;width:28px;height:28px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transform-origin:4px 3px;transition:transform .12s}
+#demoCur.click svg{transform:scale(.82)}
+#demoCur .ring{position:absolute;left:-20px;top:-20px;width:40px;height:40px;border-radius:50%;border:3px solid #93c83e;opacity:0}
+#demoCur.click .ring{animation:dcRing .75s ease-out 2}
+@keyframes dcRing{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.7);opacity:0}}
+#demoCur .lbl{position:absolute;left:26px;top:22px;background:#2f3c46;color:#fff;font-size:14px;font-weight:600;padding:6px 12px;border-radius:7px;
+  white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#demoCur .lbl b{color:#b4e83c;font-weight:700}
+#demoCur.flip .lbl{left:auto;right:18px}
+#demoCur.click .lbl{opacity:1;transform:none}
+#demoCur .caret{position:absolute;left:8px;top:-9px;width:2px;height:18px;background:#2f3c46;opacity:0}
+#demoCur.typing .caret{animation:dcBlink .5s steps(1) 6}
+@keyframes dcBlink{0%{opacity:1}50%{opacity:0}}
+</style>
 </head>
 <body>
 <div id="fit"><div id="stage">
@@ -412,7 +431,7 @@ textarea.inp{height:52px;padding:8px 10px;resize:none;line-height:1.5}
           <div class="step"><span class="dot"></span><span>Start a new vacancy request</span></div>
           <div class="step"><span class="dot"></span><span>Complete and submit the requisition</span></div>
         </div>
-        <p>Nothing you do here touches the live system. Take your time and follow the green prompts.</p>
+        <p>Nothing you do here touches the live system. Stuck at any point? Press <b>Ctrl+H</b> and the sim will show you what to do next.</p>
       </div>
       <div class="wel-right">
         <img class="logo" id="wel-logo" alt="Reach">
@@ -849,7 +868,7 @@ textarea.inp{height:52px;padding:8px 10px;resize:none;line-height:1.5}
 <div id="coach" style="display:none">
   <span class="ic">i</span>
   <span class="txt" id="coachTxt"></span>
-  <button class="restart" id="btnRestart">Restart</button>
+  <button class="restart showme" id="btnShowMe">Show me (Ctrl+H)</button><button class="restart" id="btnRestart">Restart</button>
 </div>
 </div></div>
 <script>
@@ -1648,6 +1667,67 @@ document.addEventListener('keydown', function(e){
     coach('Example answers filled in. Click <b>Submit Request</b>.');
   }
 });
+
+/* ---------- Show me: Ctrl+H shows exactly what to do next (it never does it for them) ---------- */
+function nextStep(){
+  var id = (document.querySelector('.screen.active') || {}).id;
+  if(document.getElementById('msgWrap').classList.contains('show')) return {el:'#msgOk'};
+  if(id === 's-welcome') return nameInput.value.trim() ? {el:'#btnStart'} : {el:'#nameInput', say:'Type your first name', type:1};
+  if(id === 's-ourstory') return {el:'#s-ourstory [data-go="reach"]', say:'Click the <b>Reach Recruitment</b> tile'};
+  if(id === 's-signin') return {el:'#btnMs'};
+  if(id === 's-dash') return {el:'#s-dash [data-rail-go="requests"]', say:'Click <b>Requests</b>'};
+  if(id === 's-requests') return {el:'#btnNewReq'};
+  if(id === 's-newreq'){
+    if(!state.area) return {el:'#selArea', say:'Choose the area on your brief: <b>North West</b>, 4 &amp; Above, Replacement'};
+    if(!state.form) return {el:'#selForm', say:'Choose the <b>Permanent/Temporary</b> form'};
+    var host = document.getElementById('formFields'), i = firstMissing(), mm = null;
+    if(i < 0){ mm = firstMismatch(); if(mm) i = mm.i; }
+    if(i < 0) return {el:'#btnSubmitReq'};
+    var row = host.querySelector('.frow[data-fi="'+i+'"]'), f = fields[i];
+    var sel = '#formFields .frow[data-fi="'+i+'"] ' + (f.t === 'sel' ? '.sel' : (f.t === 'chk' ? 'input' : 'input, #formFields .frow[data-fi="'+i+'"] textarea'));
+    if(mm) return {el:sel, say:'This one does not match your brief'};
+    if(f.t === 'sel') return {el:sel, say:'Choose the answer from your brief'};
+    if(f.t === 'chk') return {el:sel, say:'Tick this'};
+    if(f.t === 'area') return {el:sel, say:'Write your business case here', type:1};
+    if(f.t === 'date') return {el:sel, say:'Pick the start date from your brief'};
+    return {el:sel, say:'Type the answer from your brief', type:1};
+  }
+  return null;
+}
+var demoX = 800, demoY = 450, demoTimers = [];
+stage.addEventListener('mousemove', function(e){
+  var r = stage.getBoundingClientRect(), k = r.width / 1600;
+  demoX = (e.clientX - r.left) / k; demoY = (e.clientY - r.top) / k;
+});
+function showMe(){
+  var st = nextStep(); if(!st) return;
+  var el = document.querySelector(st.el); if(!el || !el.getClientRects().length) return;
+  try { el.scrollIntoView({block:'center', inline:'nearest'}); } catch(err){}
+  var cur = document.getElementById('demoCur');
+  if(!cur){
+    cur = document.createElement('div'); cur.id = 'demoCur';
+    cur.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 2l15 11.5-6.6 1 3.9 7.3-2.7 1.4-3.9-7.4L4 20z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg>' +
+                    '<span class="ring"></span><span class="caret"></span><span class="lbl"></span>';
+    stage.appendChild(cur);
+  }
+  demoTimers.forEach(clearTimeout); demoTimers = [];
+  var sr = stage.getBoundingClientRect(), k = sr.width / 1600, r = el.getBoundingClientRect();
+  var x = (r.left - sr.left) / k + Math.min(r.width / k / 2, 70), y = (r.top - sr.top) / k + r.height / k / 2;
+  cur.className = ''; cur.style.transition = 'none'; cur.style.left = demoX + 'px'; cur.style.top = demoY + 'px';
+  void cur.offsetWidth; cur.style.transition = '';
+  cur.querySelector('.lbl').innerHTML = (st.say || 'Click') + ' &nbsp;&middot;&nbsp; <b>now you do it</b>';
+  cur.classList.add('on'); if(x > 1150) cur.classList.add('flip');
+  cur.style.left = x + 'px'; cur.style.top = y + 'px';
+  sfx('nav');
+  demoTimers.push(setTimeout(function(){ cur.classList.add('click'); if(st.type) cur.classList.add('typing'); sfx('pick'); }, 950));
+  demoTimers.push(setTimeout(function(){ cur.classList.remove('on'); }, 3600));
+  demoTimers.push(setTimeout(function(){ cur.className = ''; }, 3900));
+}
+document.addEventListener('keydown', function(e){
+  if(!(e.ctrlKey || e.metaKey) || e.shiftKey || (e.key !== 'h' && e.key !== 'H')) return;
+  e.preventDefault(); e.stopPropagation(); showMe();
+});
+document.getElementById('btnShowMe').addEventListener('click', function(e){ e.stopPropagation(); showMe(); });
 
 nameInput.focus();
 })();
