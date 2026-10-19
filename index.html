@@ -1289,7 +1289,7 @@ var LOCATIONS = [
 ];
 var DIVISIONS_A = ['Construction','Group Services','Plant','Story England - Central','Story England - Core','Story England - Eastern','Story England - North West','Story England - South','Story Scotland - Core','Story Scotland - Energy','Story Scotland - Transportation','Training'];
 var DIVISIONS_B = ['Construction','Plant','Story England','Story England - Major Projects','Rail Scotland','Support Services','Training'];
-var PAYROLL = ['CO','CS','GT','PL','RE','RE-C','RE-E','RE-NW','RE-S','RS','TR'];
+var PAYROLL = ['ABC123','CO','CS','GT','PL','RE','RE-C','RE-E','RE-NW','RE-S','RS','TR'];
 var CARS = ['N/A','Car','Van','Van Allowance Only'];
 
 /* ---------- the two requisition forms ---------- */
@@ -1386,6 +1386,10 @@ var ANSWERS = {
   'Job Title':          {re:/^\s*project\s+coordinator\s*$/i, why:'The job title on your brief is Project Coordinator.'},
   'Hours Per Week':     {re:/^\s*40\s*$/, why:'The brief says 40 hours a week.'},
   'Number of positions needed': {re:/^\s*1\s*$/, why:'You are replacing one person.'},
+  'Code for Payroll':     {v:'ABC123', why:'Your brief gives the payroll code. In real life, Payroll give you this.'},
+  'OH Code':              {re:/^\s*RENWOPS\s*$/i, why:'Your brief gives the OH code: <b>RENWOPS</b>.'},
+  'Department':           {re:/^\s*project\s+management\s*$/i, why:'Your brief puts the role in the <b>Project Management</b> department.'},
+  'Please provide Anaplan reference': {re:/^\s*project\s+co-?ord(inator)?\s*123456\s*$/i, why:'Your brief gives the Anaplan reference: <b>Project Co-ord 123456</b>.'},
   'Salary (please do not enter a pound sign)': {fn:salaryWhy},
   'Proposed Start Date': {fn:dateWhy}
 };
@@ -1407,8 +1411,8 @@ var CHORLEY = 'Story Contracting Ltd, 2nd Floor, Building N5, Chorley Business &
 
 /* Facilitator fill. Everything except the business case, which is the task. */
 var DEMO_A = ['Project Management','Project Coordinator','4',CHORLEY,'Story England - North West',
-  'RE-NW','OH4120','Delivery','32000','40','Full Time','Permanent','No','Replacement',
-  '','N/A','Yes','ANA-2026-0417','','1',startDate()];
+  'ABC123','RENWOPS','Project Management','32000','40','Full Time','Permanent','No','Replacement',
+  '','N/A','Yes','Project Co-ord 123456','','1',startDate()];
 var DEMO_B = ['','Site Labourer','2','Story England','N/A','Full Time','','L. Robinson',CHORLEY,
   'OH4120','12 weeks','No','','Short term cover on the North West renewals framework while a '+
   'permanent requisition is approved.','','A. Worker','18.50','Rail Resourcing Ltd','No','Yes',
