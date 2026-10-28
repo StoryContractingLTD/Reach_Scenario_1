@@ -802,10 +802,9 @@ textarea.inp{height:52px;padding:8px 10px;resize:none;line-height:1.5}
         <h1>Well done, <span class="nm-first">there</span>.</h1>
         <p>You have raised a vacancy in Reach from start to finish. Your request is now sitting with the first approver, and you would be notified as it moves through each stage.</p>
         <div class="fin-ref" id="finRef">REQ-00000</div>
-        <p style="font-size:13.5px">Back in the real system, the People Team picks the request up once it is fully approved, and the vacancy goes live from there.</p>
+        <p style="font-size:13.5px">Back in the real system, Reach notifies the People Team once the request is fully approved, and the vacancy goes live from there. It always helps to message your People Partner as well, so they know it is coming.</p>
         <div class="fin-btns">
           <button class="share" id="btnShareCase">Share your business case</button>
-          <button class="ghost" id="btnFinishBack">Look at my request</button>
           <button class="ghost" id="btnFinishAgain">Go through it again</button>
         </div>
       </div>
@@ -1195,7 +1194,6 @@ document.addEventListener('click', function(e){
 });
 document.getElementById('btnNewReq').addEventListener('click', function(){ show('s-newreq'); });
 document.getElementById('btnCancelReq').addEventListener('click', function(){ show('s-requests'); });
-document.getElementById('btnFinishBack').addEventListener('click', function(){ show('s-done'); });
 document.getElementById('btnFinishAgain').addEventListener('click', function(){ restart(true); });
 
 /* ---------- share the business case ---------- */
